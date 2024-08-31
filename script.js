@@ -230,7 +230,7 @@ function pitchDisplay(game) {
 			document.getElementById(tm.homeAway+"P"+j).innerHTML = "";
 		}
 	}
-	var kickLd = plyrBox.statistics[8].athletes.sort(function(a,b){return b.stats[4] - a.stats[4]});
+	var kickLd = plyrBox.statistics[plyrBox.statistics.length - 2].athletes.sort(function(a,b){return b.stats[4] - a.stats[4]});
 	try {
 		try {
 				document.getElementById(tm.homeAway+"P4").innerHTML = "<span id=\""+tm.homeAway+"P4"+"Num\" class=\""+tm.homeAway+"Num\"></span><span id=\""+tm.homeAway+"P4"+"Pos\" class=\""+tm.homeAway+"Pos\"></span>"+"<img src=\""+nflHeadshot(kickLd[0].athlete.id)+"\" alt=\""+kickLd[0].athlete.displayName+"\"><br/>"+kickLd[0].athlete.displayName;
@@ -243,7 +243,7 @@ function pitchDisplay(game) {
 	} catch (err) {
 		document.getElementById(tm.homeAway+"P4").innerHTML = "";
 	}
-	var puntLd = plyrBox.statistics[9].athletes.sort(function(a,b){return b.stats[1] - a.stats[1]});
+	var puntLd = plyrBox.statistics[plyrBox.statistics.length - 1].athletes.sort(function(a,b){return b.stats[1] - a.stats[1]});
 	console.log(puntLd);
 	try {
 		try {
