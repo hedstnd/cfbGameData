@@ -88,7 +88,7 @@ function runGD(url, desc="") {
 	}
 	run = setInterval(gameDay,15000);
 }
-function pitchDisplay(game) {
+async function pitchDisplay(game) {
 	var lastPlay;
 	var curDrive;
 	try {
@@ -119,6 +119,8 @@ function pitchDisplay(game) {
 	wp.away = Math.round((100-wp.home)*10)/10;
 	for (var i = 0; i < 2; i++) {
 		var tm = game.header.competitions[0].competitors[i];
+		console.log(tm);
+		console.log(tm.homeAway);
 		var wProbText = tm.team.abbreviation +  " Win&nbsp;Probability:&nbsp;";
 		wProbText += wp[tm.homeAway]+"%";
 		document.getElementById(tm.homeAway+"WPSpan").style.width = wp[tm.homeAway] + "%";
@@ -221,7 +223,8 @@ function pitchDisplay(game) {
 	// }
 	var plyrBox = game.boxscore.players.filter(e => e.team.id == tm.team.id)[0];
 	console.log(plyrBox);
-	if (curDrive.team.name == tm.team.name) {
+	if (curDrive.team.abbreviation == tm.team.abbreviation) {
+		console.log("offense team " + tm.team.abbreviation);
 	document.getElementById(tm.homeAway+"Stat").innerHTML = (lastPlay.end.downDistanceText || "" )+ "<br/>" + curDrive.description + "<br/>" + lastPlay.text;
 	var recLds = plyrBox.statistics[2].athletes.sort(function(a,b){return b.stats[1] - a.stats[1];});
 	for (var j = 1; j < 4; j++) {
@@ -288,16 +291,17 @@ function pitchDisplay(game) {
 	} else {
 		if (plyrBox.statistics.length < 10) {
 			console.log(plyrBox);
-	getData("https://site.web.api.espn.com/apis/site/v3/sports/football/college-football/leaders?region=us&lang=en&contentorigin=espn&limit=6&team="+tm.id).then((leaderboard) => {
+	await getData("https://site.web.api.espn.com/apis/site/v3/sports/football/college-football/leaders?region=us&lang=en&contentorigin=espn&limit=6&team="+tm.id).then((leaderboard) => {
 		console.log(leaderboard);
+		console.log("defense team" + tm.team.abbreviation);
 	var tklLead;
-	try {
-		tklLead = plyrBox.statistics[4].athletes.sort(function(a,b) {return b.stats[0] - a.stats[0];});
-		document.getElementById(tm.homeAway+"PassLd").innerHTML = "Tackle Leader<br/><img src=\""+nflHeadshot(tklLead[0].athlete.id)+"\"><br/>#"+tklLead[0].athlete.jersey + " " + tklLead[0].athlete.lastName + " ("+tklLead[0].stats[0] + " TOT, " + tklLead[0].stats[1] + " SOLO, " + tklLead[0].stats[3] + " TFL)";
-	} catch (err) {
+	// try {
+		// tklLead = plyrBox.statistics[4].athletes.sort(function(a,b) {return b.stats[0] - a.stats[0];});
+		// document.getElementById(tm.homeAway+"PassLd").innerHTML = "Tackle Leader<br/><img src=\""+nflHeadshot(tklLead[0].athlete.id)+"\"><br/>#"+tklLead[0].athlete.jersey + " " + tklLead[0].athlete.lastName + " ("+tklLead[0].stats[0] + " TOT, " + tklLead[0].stats[1] + " SOLO, " + tklLead[0].stats[3] + " TFL)";
+	// } catch (err) {
 		tklLead = leaderboard.leaders.categories[6].leaders;
 		document.getElementById(tm.homeAway+"PassLd").innerHTML = "Tackle Leader (Season)<br/><img src=\""+nflHeadshot(tklLead[0].athlete.id)+"\"><br/>#"+tklLead[0].athlete.jersey + " " + tklLead[0].athlete.shortName + " ("+tklLead[0].displayValue + " TOT)";
-	}
+	// }
 	for (var j = 1; j < 3; j++) {
 		if (j < tklLead.length) {
 			console.log(tklLead[j]);
@@ -314,13 +318,13 @@ function pitchDisplay(game) {
 		}
 	}
 	var sackLead;
-	try {
-		sackLead = plyrBox.statistics[4].athletes.sort(function(a,b) {return b.stats[2] - a.stats[2];});
-		document.getElementById(tm.homeAway+"RushLd").innerHTML = "Sack Leader<br/><img src=\""+nflHeadshot(sackLead[0].athlete.id)+"\"><br/>#"+sackLead[0].athlete.jersey + " " + sackLead[0].athlete.lastName + " ("+sackLead[0].stats[2] + " SACK, " + sackLead[0].stats[5] + " QB HITS, " + sackLead[0].stats[3] + " TFL)";
-	} catch (err) {
+	// try {
+		// sackLead = plyrBox.statistics[4].athletes.sort(function(a,b) {return b.stats[2] - a.stats[2];});
+		// document.getElementById(tm.homeAway+"RushLd").innerHTML = "Sack Leader<br/><img src=\""+nflHeadshot(sackLead[0].athlete.id)+"\"><br/>#"+sackLead[0].athlete.jersey + " " + sackLead[0].athlete.lastName + " ("+sackLead[0].stats[2] + " SACK, " + sackLead[0].stats[5] + " QB HITS, " + sackLead[0].stats[3] + " TFL)";
+	// } catch (err) {
 		sackLead = leaderboard.leaders.categories[7].leaders;
 		document.getElementById(tm.homeAway+"RushLd").innerHTML = "Sack Leader (Season)<br/><img src=\""+sackLead[0].athlete.headshot.href+"\"><br/>#"+sackLead[0].athlete.jersey + " " + sackLead[0].athlete.shortName + " ("+sackLead[0].displayValue + " SACK)";
-	}
+	// }
 	console.log(sackLead);
 	for (var j = 3; j < 5; j++) {
 		if (j < sackLead.length + 1) {
@@ -337,13 +341,15 @@ function pitchDisplay(game) {
 		}
 	}
 	var intLead;
-	var intLeadNum = 1;
+	var intLeadNum = 0;
 	try {
-		intLead = plyrBox.statistics[5].athletes.sort(function(a,b) {return b.stats[0] - a.stats[0];});
-		document.getElementById(tm.homeAway+"RecLd").innerHTML = "INT Leader<br/><img src=\""+nflHeadshot(intLead[0].athlete.id)+"\"><br/>#"+intLead[0].athlete.jersey + " " + intLead[0].athlete.lastName + " ("+intLead[0].stats[0] + " INT, " + intLead[0].stats[1] + " YDS, " + intLead[0].stats[2] + " TD)";
+		intLead = plyrBox.statistics.filter(e => e.name == "interceptions")[0].athletes.sort(function(a,b) {return b.stats[0] - a.stats[0];});
+		document.getElementById(tm.homeAway+"RecLd").innerHTML = "INT Leader (Today)<br/><img src=\""+nflHeadshot(intLead[0].athlete.id)+"\"><br/>#"+intLead[0].athlete.jersey + " " + intLead[0].athlete.lastName + " ("+intLead[0].stats[0] + " INT, " + intLead[0].stats[1] + " YDS, " + intLead[0].stats[2] + " TD)";
 		intLeadNum = 1;
-		intLead = [intlead[0]].concat(leaderboard.leaders.categories[8].leaders);
+		intLead = [intLead[0]].concat(leaderboard.leaders.categories[8].leaders);
+		console.log(intLead);
 	} catch (err) {
+		console.log(err);
 		intLead = leaderboard.leaders.categories[8].leaders || [];
 		if (intLead.length > 0) {
 		document.getElementById(tm.homeAway+"RecLd").innerHTML = "INT Leader (Season)<br/><img src=\""+intLead[0].athlete.headshot.href+"\"><br/>#"+intLead[0].athlete.jersey + " " + intLead[0].athlete.shortName + " ("+intLead[0].displayValue + " INT)";
@@ -351,7 +357,7 @@ function pitchDisplay(game) {
 			document.getElementById(tm.homeAway+"RecLd").innerHTML = "";
 		}
 	}
-	if (5 < intLead.length + 1) {
+	if (intLead.length > 1) {
 		document.getElementById(tm.homeAway+"P5").innerHTML = "<span id=\""+tm.homeAway+"P5"+"Num\" class=\""+tm.homeAway+"Num\"></span><span id=\""+tm.homeAway+"P5"+"Pos\" class=\""+tm.homeAway+"Pos\"></span>"+"<img src=\""+nflHeadshot(intLead[intLeadNum].athlete.id)+"\" alt=\""+intLead[intLeadNum].athlete.shortName+"\"><br/>"+intLead[intLeadNum].athlete.displayName;
 		document.getElementById(tm.homeAway+"P5").innerHTML+= "<br/>"+intLead[1].displayValue + " INT (Season)";
 		document.getElementById(tm.homeAway+"P5"+"Num").innerText = intLead[1].athlete.jersey;
