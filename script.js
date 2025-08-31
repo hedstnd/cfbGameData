@@ -275,8 +275,12 @@ async function pitchDisplay(game) {
 		document.getElementById(tm.homeAway+"P5").innerHTML = "";
 	}
 	for (var j = 0; j < lead.leaders.length; j++) {
-		var ad = document.getElementById(tm.homeAway+leadOrd[j]+"Ld");
-		ad.innerHTML = lead.leaders[j].displayName + " Leader<br/>";
+		var ad;
+		try {
+			ad = document.getElementById(tm.homeAway+leadOrd[j]+"Ld");
+			ad.innerHTML = lead.leaders[j].displayName + " Leader<br/>";
+		} catch (err) {
+		}
 		try {
 			ad.innerHTML+= "<img src=\"" + lead.leaders[j].leaders[0].athlete.headshot.href+"\"/><br/>";
 		} catch (err) {
@@ -285,7 +289,9 @@ async function pitchDisplay(game) {
 			ad.innerHTML+= "#" + lead.leaders[j].leaders[0].athlete.jersey + " " + lead.leaders[j].leaders[0].athlete.shortName + " (" + lead.leaders[j].leaders[0].displayValue + ")";
 			// ad.innerHTML+= ", " + 
 		} catch (err) {
-			ad.innerHTML += "None";
+			if (ad) {
+				ad.innerHTML += "None";
+			}
 		}
 	}
 	} else {
